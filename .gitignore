@@ -1,0 +1,62 @@
+# Editor directories and files
+.idea
+.vscode
+.c9
+.sync
+.history
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+__MACOSX
+
+# Windows files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Express.js
+/build
+/dist
+/tmp
+/temp
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Uploads
+/public/uploads
+
+# Test coverage
+/coverage
+
+# IDE specific files
+.idea/
+.vscode/
+
+# Package-lock files
+package-lock.json
+yarn.lock
+
+# Log files
+*.log
+
+# Misc
+.DS_Store
