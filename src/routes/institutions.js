@@ -38,61 +38,65 @@ router.get('/', async (req, res) => {
     const conditions = [];
 
     if (category) {
-      conditions.push(`category_id = (SELECT id FROM institution_category WHERE code = $${params.length+1})`);
+      conditions.push(`i.category_id = (SELECT id FROM institution_category WHERE code = $${params.length+1})`);
       params.push(category);
     }
-
     if (subtype) {
-      conditions.push(`subtype_id = (SELECT id FROM institution_subtype WHERE code = $${params.length+1})`);
+      conditions.push(`i.subtype_id = (SELECT id FROM institution_subtype WHERE code = $${params.length+1})`);
       params.push(subtype);
     }
-
     if (region) {
-      conditions.push(`region_id = (SELECT id FROM region WHERE code = $${params.length+1})`);
+      conditions.push(`i.region_id = (SELECT id FROM region WHERE code = $${params.length+1})`);
       params.push(region);
     }
-
     if (district) {
-      conditions.push(`district_id = (SELECT id FROM district WHERE code = $${params.length+1})`);
+      conditions.push(`i.district_id = (SELECT id FROM district WHERE code = $${params.length+1})`);
       params.push(district);
     }
-
     if (commune) {
-      conditions.push(`commune_id = (SELECT id FROM commune WHERE code = $${params.length+1})`);
+      conditions.push(`i.commune_id = (SELECT id FROM commune WHERE code = $${params.length+1})`);
       params.push(commune);
     }
-
     if (street) {
-      conditions.push(`street_id = (SELECT id FROM street WHERE name = $${params.length+1})`);
+      conditions.push(`i.street_id = (SELECT id FROM street WHERE name = $${params.length+1})`);
       params.push(street);
     }
-
     if (name) {
-      conditions.push(`LOWER(name) LIKE $${params.length+1}`);
+      conditions.push(`LOWER(i.name) LIKE $${params.length+1}`);
       params.push(`%${name.toLowerCase()}%`);
     }
-
     if (status) {
-      conditions.push(`status = $${params.length+1}`);
+      conditions.push(`i.status = $${params.length+1}`);
       params.push(status);
     }
-
     if (min_capacity) {
-      conditions.push(`capacity >= $${params.length+1}`);
+      conditions.push(`i.capacity >= $${params.length+1}`);
       params.push(min_capacity);
     }
-
     if (max_capacity) {
-      conditions.push(`capacity <= $${params.length+1}`);
+      conditions.push(`i.capacity <= $${params.length+1}`);
       params.push(max_capacity);
     }
 
-    let query = 'SELECT * FROM institution';
+    let query = `
+      SELECT
+        i.*,
+        COALESCE(json_agg(DISTINCT c.*) FILTER (WHERE c.id IS NOT NULL), '[]') AS contacts,
+        COALESCE(json_agg(DISTINCT s.*) FILTER (WHERE s.id IS NOT NULL), '[]') AS services,
+        COALESCE(json_agg(DISTINCT f.*) FILTER (WHERE f.id IS NOT NULL), '[]') AS education_fees
+      FROM institution i
+      LEFT JOIN contact c ON c.institution_id = i.id
+      LEFT JOIN service s ON s.institution_id = i.id
+      LEFT JOIN education_fee f ON f.institution_id = i.id
+    `;
+
     if (conditions.length > 0) query += ' WHERE ' + conditions.join(' AND ');
-    query += ` ORDER BY ${sort} LIMIT $${params.length+1} OFFSET $${params.length+2}`;
+
+    query += ` GROUP BY i.id ORDER BY ${sort} LIMIT $${params.length+1} OFFSET $${params.length+2}`;
     params.push(parseInt(limit), parseInt(offset));
 
     const result = await pool.query(query, params);
+
     res.json({
       data: result.rows,
       count: result.rows.length,
