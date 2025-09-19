@@ -15,15 +15,12 @@ app.use(bodyParser.json({ limit: '10mb' })); // Ajout d'une limite pour les gros
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/institutions', institutionRoutes);
+app.use('/api/v1/institutions', institutionRoutes);
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date() });
 });
-// Route de base pour vérifier que le serveur fonctionne
-app.get('/', (req, res) => {
-  res.json({ message: 'API Server is running' });
-});
+
 
 // Middleware de gestion d'erreur global
 app.use((err, req, res, next) => {
@@ -31,12 +28,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 // Endpoint pour fournir des exemples de requêtes UX
-app.get('/api/examples', (req, res) => {
+app.get('/', (req, res) => {
   const examples = [
+    { message: 'API Server is running' },
     {
       description: "Lister toutes les institutions d'éducation",
       method: "GET",
-      url: "/api/institutions?category=education",
+      url: "/api/v1/institutions?category=education",
       queryParams: {
         category: "education"
       }
@@ -44,7 +42,7 @@ app.get('/api/examples', (req, res) => {
     {
       description: "Lister les écoles primaires dans la région Analamanga",
       method: "GET",
-      url: "/api/institutions?category=education&subtype=EPP&region=analamanga",
+      url: "/api/v1/institutions?category=education&subtype=EPP&region=analamanga",
       queryParams: {
         category: "education",
         subtype: "EPP",
@@ -54,7 +52,7 @@ app.get('/api/examples', (req, res) => {
     {
       description: "Chercher toutes les institutions ouvertes avec capacité ≥ 50",
       method: "GET",
-      url: "/api/institutions?status=ouvert&min_capacity=50",
+      url: "/api/v1/institutions?status=ouvert&min_capacity=50",
       queryParams: {
         status: "ouvert",
         min_capacity: 50
@@ -63,7 +61,7 @@ app.get('/api/examples', (req, res) => {
     {
       description: "Rechercher par nom partiel et commune",
       method: "GET",
-      url: "/api/institutions?name=lycee&commune=antsiranana",
+      url: "/api/v1/institutions?name=lycee&commune=antsiranana",
       queryParams: {
         name: "lycee",
         commune: "antsiranana"
@@ -72,7 +70,7 @@ app.get('/api/examples', (req, res) => {
     {
       description: "Pagination et tri par année d'établissement",
       method: "GET",
-      url: "/api/institutions?category=sante&limit=10&offset=20&sort=established",
+      url: "/api/v1/institutions?category=sante&limit=10&offset=20&sort=established",
       queryParams: {
         category: "sante",
         limit: 10,
@@ -90,7 +88,7 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
